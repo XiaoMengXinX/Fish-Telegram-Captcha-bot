@@ -40,6 +40,7 @@ func BotHandler(w http.ResponseWriter, r *http.Request) {
 	bot.SetAPIEndpoint(tgbotapi.APIEndpoint)
 
 	if update.ChatJoinRequest != nil {
+		fmt.Println(blacklistKeywords)
 		if containsAny(update.ChatJoinRequest.From.String(), blacklistKeywords) || containsAny(update.ChatJoinRequest.Bio, blacklistKeywords) {
 			_, _ = bot.Request(tgbotapi.DeclineChatJoinRequest{
 				ChatConfig: tgbotapi.ChatConfig{
