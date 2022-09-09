@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>完成验证</title>
+    <script src="https://js.hcaptcha.com/1/api.js?hl=zh" async defer></script>
+    <style>
+        .h-captcha {
+            margin-top: 50px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .input-button {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        input[type=submit]:hover {
+            background-color: #009900;
+            color: white;
+        }
+
+        input[type=submit] {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            font-size: 16px;
+            border-radius: 8px;
+            -webkit-transition-duration: 0.4s; /* Safari */
+            transition-duration: 0.4s;
+        }
+
+        .message {
+            margin: 20px;
+            font-size: 16px;
+            text-align: center;
+        }
+    </style>
+</head>
+<meta name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+
+<body>
+
+<div class="form">
+    <form id="hcaptcha-challenge" method="POST">
+        <script>
+            var onSuccess = function (response) {
+                var logEl = document.querySelector(".message");
+                logEl.innerHTML = "Challenge Success!"
+            };
+            var onExpire = function (response) {
+                var logEl = document.querySelector(".message");
+                logEl.innerHTML = "Token expired, please refresh the page."
+            };
+        </script>
+        <div id="hcaptcha" class="h-captcha" data-sitekey="{{.}}"
+             data-callback="onSuccess" data-expired-callback="onExpire"></div>
+        <div class="message" aria-live="polite"></div>
+        <div class="input-button">
+            <input type="submit" value="Submit your verification">
+        </div>
+    </form>
+</div>
+
+</body>
+</html>
