@@ -35,6 +35,7 @@ func BotHandler(w http.ResponseWriter, r *http.Request) {
 		Client: &http.Client{},
 		Buffer: 100,
 	}
+	bot.SetAPIEndpoint(tgbotapi.APIEndpoint)
 
 	if update.ChatJoinRequest != nil {
 		reqData := JoinReqData{

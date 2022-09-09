@@ -34,6 +34,7 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 		Client: &http.Client{},
 		Buffer: 100,
 	}
+	bot.SetAPIEndpoint(tgbotapi.APIEndpoint)
 
 	if token := r.Form.Get("token"); token == "" {
 		t, _ := template.New("index").Parse(string(html.ResultHTML))
