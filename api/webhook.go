@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -41,9 +40,8 @@ func BotHandler(w http.ResponseWriter, r *http.Request) {
 	bot.SetAPIEndpoint(tgbotapi.APIEndpoint)
 
 	if update.ChatJoinRequest != nil {
-		log.Println(update.ChatJoinRequest.From.String(), update.ChatJoinRequest.Bio)
-		log.Println(blacklistKeywords)
-		if ContainsAny(update.ChatJoinRequest.From.String(), blacklistKeywords) || ContainsAny(update.ChatJoinRequest.Bio, blacklistKeywords) {
+		name := update.ChatJoinRequest.From.FirstName + " " + update.ChatJoinRequest.From.LastName
+		if ContainsAny(name, blacklistKeywords) || ContainsAny(update.ChatJoinRequest.Bio, blacklistKeywords) {
 			_, _ = bot.Request(tgbotapi.DeclineChatJoinRequest{
 				ChatConfig: tgbotapi.ChatConfig{
 					ChatID: update.ChatJoinRequest.Chat.ID,
