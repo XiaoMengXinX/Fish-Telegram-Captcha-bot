@@ -54,7 +54,7 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 		var resultText string
 		t, _ := template.New("index").Parse(string(html.ResultHTML))
 		result := VerifyCaptcha(hCaptchaToken)
-		if result.Success && result.ChallengeTs.After(time.Now().Add(-30*time.Second)) {
+		if result.Success && result.ChallengeTs.After(time.Now().Add(-60*time.Second)) {
 			joinReqTime := time.Unix(data.Time, 0)
 			if joinReqTime.After(time.Now().Add(-180 * time.Second)) {
 				approveConfig := tgbotapi.ApproveChatJoinRequestConfig{
