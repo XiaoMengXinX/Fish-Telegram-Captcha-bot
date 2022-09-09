@@ -57,13 +57,12 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 		if result.Success && result.ChallengeTs.After(time.Now().Add(-60*time.Second)) {
 			joinReqTime := time.Unix(data.Time, 0)
 			if joinReqTime.After(time.Now().Add(-180 * time.Second)) {
-				approveConfig := tgbotapi.ApproveChatJoinRequestConfig{
+				_, _ = bot.Request(tgbotapi.ApproveChatJoinRequestConfig{
 					ChatConfig: tgbotapi.ChatConfig{
 						ChatID: data.ChatID,
 					},
 					UserID: data.UserID,
-				}
-				_, _ = bot.Request(approveConfig)
+				})
 				resultText = "验证成功"
 			} else {
 				resultText = "验证超时，请重新加群验证"

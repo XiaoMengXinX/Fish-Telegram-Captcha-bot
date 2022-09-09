@@ -4,15 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
+	"strings"
 
+	"github.com/XiaoMengXinX/Fish-Telegram-Captcha-bot/keywords"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/golang-jwt/jwt/v4"
 )
 
 var jwtKey = os.Getenv("SECRET_KEY")
+var blacklistKeywords = strings.Split(strings.ReplaceAll(string(keywords.Blacklist), "\r", ""), "\n")
 
 type JoinReqData struct {
 	UserID int64 `json:"user_id"`
@@ -38,6 +40,15 @@ func BotHandler(w http.ResponseWriter, r *http.Request) {
 	bot.SetAPIEndpoint(tgbotapi.APIEndpoint)
 
 	if update.ChatJoinRequest != nil {
+		if containsAny(update.ChatJoinRequest.From.String(), blacklistKeywords) || containsAny(update.ChatJoinRequest.Bio, blacklistKeywords) {
+			_, _ = bot.Request(tgbotapi.DeclineChatJoinRequest{
+				ChatConfig: tgbotapi.ChatConfig{
+					ChatID: update.ChatJoinRequest.Chat.ID,
+				},
+				UserID: update.ChatJoinRequest.From.ID,
+			})
+			return
+		}
 		reqData := JoinReqData{
 			UserID: update.ChatJoinRequest.From.ID,
 			ChatID: update.ChatJoinRequest.Chat.ID,
@@ -51,9 +62,15 @@ func BotHandler(w http.ResponseWriter, r *http.Request) {
 		msg := tgbotapi.NewMessage(update.ChatJoinRequest.From.ID, fmt.Sprintf("你正在申请加入群组「%s」，请点击下方按钮以完成加群验证。\n\n请在 180s 内完成加群验证", update.ChatJoinRequest.Chat.Title))
 		button := tgbotapi.NewInlineKeyboardButtonURL("开始验证", fmt.Sprintf("https://%s/captcha?token=%s", r.Host, tokenString))
 		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(button))
-		_, err = bot.Send(msg)
-		if err != nil {
-			log.Println(err)
+		_, _ = bot.Send(msg)
+	}
+}
+
+func containsAny(str string, slice []string) bool {
+	for _, v := range slice {
+		if strings.Contains(str, v) {
+			return true
 		}
 	}
+	return false
 }
