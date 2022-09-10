@@ -39,6 +39,11 @@ func BotHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	bot.SetAPIEndpoint(tgbotapi.APIEndpoint)
 
+	if strings.ReplaceAll(r.URL.Path, "/webhook/", "") != os.Getenv("BOT_TOKEN") {
+		_, _ = w.Write([]byte("Incorrect validation failed"))
+		return
+	}
+
 	if update.ChatJoinRequest != nil {
 		name := update.ChatJoinRequest.From.FirstName + " " + update.ChatJoinRequest.From.LastName
 		if ContainsAny(name, blacklistKeywords) || ContainsAny(update.ChatJoinRequest.Bio, blacklistKeywords) {

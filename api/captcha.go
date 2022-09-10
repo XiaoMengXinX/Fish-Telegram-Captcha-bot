@@ -53,24 +53,29 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 	if hCaptchaToken := r.Form.Get("g-recaptcha-response"); hCaptchaToken != "" {
 		var resultText string
 		t, _ := template.New("index").Parse(string(html.ResultHTML))
-		result := VerifyCaptcha(hCaptchaToken)
-		if result.Success && result.ChallengeTs.After(time.Now().Add(-60*time.Second)) {
-			joinReqTime := time.Unix(data.Time, 0)
-			if joinReqTime.After(time.Now().Add(-180 * time.Second)) {
-				_, _ = bot.Request(tgbotapi.ApproveChatJoinRequestConfig{
-					ChatConfig: tgbotapi.ChatConfig{
-						ChatID: data.ChatID,
-					},
-					UserID: data.UserID,
-				})
-				resultText = "验证成功"
-			} else {
-				resultText = "验证超时，请重新加群验证"
-			}
-		} else {
-			resultText = "验证失败或超时，请关闭此页面并重试"
+		defer t.Execute(w, resultText)
+		joinReqTime := time.Unix(data.Time, 0)
+		if joinReqTime.After(time.Now().Add(-180 * time.Second)) {
+			resultText = "验证超时，请重新加群验证"
+			return
 		}
-		_ = t.Execute(w, resultText)
+		result := VerifyCaptcha(hCaptchaToken)
+		switch {
+		case !result.Success:
+			resultText = "验证失败，请关闭此页面并重试"
+		case !result.ChallengeTs.After(time.Now().Add(-60 * time.Second)):
+			resultText = "验证超时，请关闭此页面并重试"
+		case result.Hostname != r.URL.Hostname():
+			resultText = "验证失败，错误的主机名"
+		default:
+			_, _ = bot.Request(tgbotapi.ApproveChatJoinRequestConfig{
+				ChatConfig: tgbotapi.ChatConfig{
+					ChatID: data.ChatID,
+				},
+				UserID: data.UserID,
+			})
+			resultText = "验证成功"
+		}
 		return
 	}
 
