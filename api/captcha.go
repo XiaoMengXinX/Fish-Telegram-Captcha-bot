@@ -51,15 +51,16 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	joinReqTime := time.Unix(data.Time, 0)
+	if !joinReqTime.After(time.Now().Add(-180 * time.Second)) {
+		t, _ := template.New("index").Parse(string(html.ResultHTML))
+		_ = t.Execute(w, "验证超时，请重新加群验证")
+		return
+	}
+
 	if hCaptchaToken := r.Form.Get("g-recaptcha-response"); hCaptchaToken != "" {
 		var resultText string
 		t, _ := template.New("index").Parse(string(html.ResultHTML))
-		joinReqTime := time.Unix(data.Time, 0)
-		if !joinReqTime.After(time.Now().Add(-180 * time.Second)) {
-			resultText = "验证超时，请重新加群验证"
-			_ = t.Execute(w, resultText)
-			return
-		}
 		result := VerifyCaptcha(hCaptchaToken)
 		fmt.Println(result.Hostname, r.Host)
 		switch {
