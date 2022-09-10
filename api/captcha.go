@@ -60,6 +60,7 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		result := VerifyCaptcha(hCaptchaToken)
+		fmt.Println(result.Hostname, r.Host)
 		switch {
 		case !result.Success:
 			resultText = "验证失败，请关闭此页面并重试"
