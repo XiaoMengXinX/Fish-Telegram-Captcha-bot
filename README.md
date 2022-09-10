@@ -3,7 +3,7 @@
 A telegram bot running on vercel to verify if the user is a human.
 ## Workflow
 
-https://user-images.githubusercontent.com/19994286/189465818-2174bcc4-fe74-4749-89cd-315ec4b0638a.mp4
+https://user-images.githubusercontent.com/19994286/189467303-d35ac426-fa06-4eef-a9e6-b3e5a87b7caa.mp4
 
 ## Deploy
 
