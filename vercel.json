@@ -1,12 +1,12 @@
 {
-  "rewrites": [
+  "routes": [
     {
-      "source": "/webhook/.*",
-      "destination": "/api/webhook.go"
+      "src": "/webhook/.*",
+      "dest": "/api/webhook.go"
     },
     {
-      "source": "/captcha",
-      "destination": "/api/captcha.go"
+      "src": "/captcha",
+      "dest": "/api/captcha.go"
     }
   ]
 }
