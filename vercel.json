@@ -1,12 +1,12 @@
 {
   "rewrites": [
     {
-      "source": "/webhook",
-      "destination": "/api/webhook"
+      "source": "/webhook/.*",
+      "destination": "/api/webhook.go"
     },
     {
       "source": "/captcha",
-      "destination": "/api/captcha"
+      "destination": "/api/captcha.go"
     }
   ]
 }
