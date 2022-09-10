@@ -53,10 +53,10 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 	if hCaptchaToken := r.Form.Get("g-recaptcha-response"); hCaptchaToken != "" {
 		var resultText string
 		t, _ := template.New("index").Parse(string(html.ResultHTML))
-		defer t.Execute(w, resultText)
 		joinReqTime := time.Unix(data.Time, 0)
 		if joinReqTime.After(time.Now().Add(-180 * time.Second)) {
 			resultText = "验证超时，请重新加群验证"
+			_ = t.Execute(w, resultText)
 			return
 		}
 		result := VerifyCaptcha(hCaptchaToken)
@@ -76,6 +76,7 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 			})
 			resultText = "验证成功"
 		}
+		_ = t.Execute(w, resultText)
 		return
 	}
 
