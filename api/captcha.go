@@ -39,14 +39,14 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 
 	if token := r.Form.Get("token"); token == "" {
 		t, _ := template.New("index").Parse(string(html.ResultHTML))
-		_ = t.Execute(w, "参数错误")
+		_ = t.Execute(w, "Wrong parameters")
 		return
 	} else {
 		var isVaild bool
 		isVaild, data = VerifyJWT(token)
 		if !isVaild {
 			t, _ := template.New("index").Parse(string(html.ResultHTML))
-			_ = t.Execute(w, "参数错误")
+			_ = t.Execute(w, "Incorrect parameters")
 			return
 		}
 	}
@@ -54,7 +54,7 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 	joinReqTime := time.Unix(data.Time, 0)
 	if !joinReqTime.After(time.Now().Add(-180 * time.Second)) {
 		t, _ := template.New("index").Parse(string(html.ResultHTML))
-		_ = t.Execute(w, "验证超时，请重新加群验证")
+		_ = t.Execute(w, "Verification timeout, please resend your join request")
 		return
 	}
 
@@ -65,11 +65,11 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(result.Hostname, r.Host)
 		switch {
 		case !result.Success:
-			resultText = "验证失败，请关闭此页面并重试"
+			resultText = "Verification failed, please close the page and try again"
 		case !result.ChallengeTs.After(time.Now().Add(-60 * time.Second)):
-			resultText = "验证超时，请关闭此页面并重试"
+			resultText = "Verification timeout, please close the page and try again"
 		case result.Hostname != parseHostName(r.Host):
-			resultText = "验证失败，错误的主机名"
+			resultText = "Verification failed, incorrect host name"
 		default:
 			_, _ = bot.Request(tgbotapi.ApproveChatJoinRequestConfig{
 				ChatConfig: tgbotapi.ChatConfig{
@@ -77,7 +77,7 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 				},
 				UserID: data.UserID,
 			})
-			resultText = "验证成功"
+			resultText = "Verification passed"
 		}
 		_ = t.Execute(w, resultText)
 		return
