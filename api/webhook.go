@@ -25,6 +25,11 @@ type JoinReqData struct {
 func BotHandler(w http.ResponseWriter, r *http.Request) {
 	body, _ := io.ReadAll(r.Body)
 
+	if strings.ReplaceAll(r.URL.Path, "/webhook/", "") != os.Getenv("BOT_TOKEN") {
+		_, _ = w.Write([]byte("bot token validation failed"))
+		return
+	}
+
 	var update tgbotapi.Update
 
 	err := json.Unmarshal(body, &update)
@@ -38,11 +43,6 @@ func BotHandler(w http.ResponseWriter, r *http.Request) {
 		Buffer: 100,
 	}
 	bot.SetAPIEndpoint(tgbotapi.APIEndpoint)
-
-	if strings.ReplaceAll(r.URL.Path, "/webhook/", "") != os.Getenv("BOT_TOKEN") {
-		_, _ = w.Write([]byte("bot token validation failed"))
-		return
-	}
 
 	if update.ChatJoinRequest != nil {
 		name := update.ChatJoinRequest.From.FirstName + " " + update.ChatJoinRequest.From.LastName
