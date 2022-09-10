@@ -54,7 +54,7 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 		var resultText string
 		t, _ := template.New("index").Parse(string(html.ResultHTML))
 		joinReqTime := time.Unix(data.Time, 0)
-		if joinReqTime.After(time.Now().Add(-180 * time.Second)) {
+		if !joinReqTime.After(time.Now().Add(-180 * time.Second)) {
 			resultText = "验证超时，请重新加群验证"
 			_ = t.Execute(w, resultText)
 			return
