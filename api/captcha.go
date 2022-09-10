@@ -59,7 +59,6 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 			_ = t.Execute(w, resultText)
 			return
 		}
-		fmt.Println(r.Host, r.URL)
 		result := VerifyCaptcha(hCaptchaToken)
 		switch {
 		case !result.Success:
