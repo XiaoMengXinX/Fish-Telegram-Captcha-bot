@@ -59,13 +59,14 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 			_ = t.Execute(w, resultText)
 			return
 		}
+		fmt.Println(r.Host, r.URL)
 		result := VerifyCaptcha(hCaptchaToken)
 		switch {
 		case !result.Success:
 			resultText = "验证失败，请关闭此页面并重试"
 		case !result.ChallengeTs.After(time.Now().Add(-60 * time.Second)):
 			resultText = "验证超时，请关闭此页面并重试"
-		case result.Hostname != r.URL.Hostname():
+		case result.Hostname != r.Host:
 			resultText = "验证失败，错误的主机名"
 		default:
 			_, _ = bot.Request(tgbotapi.ApproveChatJoinRequestConfig{
