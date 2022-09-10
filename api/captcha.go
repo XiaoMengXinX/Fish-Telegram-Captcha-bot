@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/XiaoMengXinX/Fish-Telegram-Captcha-bot/html"
@@ -66,7 +67,7 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 			resultText = "验证失败，请关闭此页面并重试"
 		case !result.ChallengeTs.After(time.Now().Add(-60 * time.Second)):
 			resultText = "验证超时，请关闭此页面并重试"
-		case result.Hostname != r.Host:
+		case result.Hostname != parseHostName(r.Host):
 			resultText = "验证失败，错误的主机名"
 		default:
 			_, _ = bot.Request(tgbotapi.ApproveChatJoinRequestConfig{
@@ -115,4 +116,12 @@ func VerifyCaptcha(token string) (r VerifyResp) {
 	body, _ := io.ReadAll(resp.Body)
 	_ = json.Unmarshal(body, &r)
 	return
+}
+
+func parseHostName(s string) string {
+	domains := strings.Split(s, ".")
+	if len(domains) < 2 {
+		return ""
+	}
+	return strings.Join(domains[len(domains)-2:], ".")
 }
