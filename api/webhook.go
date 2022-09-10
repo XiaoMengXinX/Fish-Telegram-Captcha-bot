@@ -65,8 +65,8 @@ func BotHandler(w http.ResponseWriter, r *http.Request) {
 			"data": string(reqDataJson),
 		})
 		tokenString, _ := token.SignedString([]byte(jwtKey))
-		msg := tgbotapi.NewMessage(update.ChatJoinRequest.From.ID, fmt.Sprintf("你正在申请加入群组「%s」，请点击下方按钮以完成加群验证。\n\n请在 180s 内完成加群验证", update.ChatJoinRequest.Chat.Title))
-		button := tgbotapi.NewInlineKeyboardButtonURL("开始验证", fmt.Sprintf("https://%s/captcha?token=%s", r.Host, tokenString))
+		msg := tgbotapi.NewMessage(update.ChatJoinRequest.From.ID, fmt.Sprintf("你正在申请加入群组「%s」，请点击下方按钮以完成加群验证。\nYou are requesting to join the group 「%s」, please click the button below to complete the anti-spam verification.\n\n请在 180s 内完成加群验证\nPlease complete the verification within 180s.", update.ChatJoinRequest.Chat.Title, update.ChatJoinRequest.Chat.Title))
+		button := tgbotapi.NewInlineKeyboardButtonURL("开始验证/Verification", fmt.Sprintf("https://%s/captcha?token=%s", r.Host, tokenString))
 		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(button))
 		_, _ = bot.Send(msg)
 	}
