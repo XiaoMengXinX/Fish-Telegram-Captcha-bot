@@ -59,6 +59,7 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if hCaptchaToken := r.Form.Get("g-recaptcha-response"); hCaptchaToken != "" {
+		log.Println(r.Form.Get("webapp"))
 		var resultText string
 		t, _ := template.New("index").Parse(string(html.ResultHTML))
 		result := VerifyCaptcha(hCaptchaToken)

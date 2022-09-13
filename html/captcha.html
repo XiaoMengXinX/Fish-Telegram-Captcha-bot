@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Are you human?</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
     <style>
         .h-captcha {
@@ -58,6 +59,7 @@
                 logEl.innerHTML = "Token expired, please refresh the page."
             };
         </script>
+        <input type="hidden" id="webappData" name="webapp" value="">
         <div id="hcaptcha" class="h-captcha" data-sitekey="{{.}}"
              data-callback="onSuccess" data-expired-callback="onExpire"></div>
         <div class="message" aria-live="polite"></div>
@@ -66,6 +68,18 @@
         </div>
     </form>
 </div>
+
+<script>
+    Telegram.WebApp.ready();
+
+    let initData = Telegram.WebApp.initData || '';
+
+    document.getElementById("webappData").value = initData;
+
+    Telegram.WebApp.MainButton.setText('CLOSE').show().onClick(function () {
+        Telegram.WebApp.close();
+    });
+</script>
 
 </body>
 </html>
