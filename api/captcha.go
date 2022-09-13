@@ -64,7 +64,6 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 		var resultText string
 		t, _ := template.New("index").Parse(string(html.ResultHTML))
 		result := VerifyCaptcha(hCaptchaToken)
-		fmt.Println(result.Hostname, r.Host)
 		switch {
 		case !result.Success:
 			resultText = "Verification failed, please close the page and try again"

@@ -2,6 +2,7 @@
 <html lang="zh-CN">
 
 <head>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Result</title>
     <style>
@@ -17,6 +18,11 @@
 
 <body>
 <div class="result"><h1>{{.}}</h1></div>
+<script>
+    Telegram.WebApp.MainButton.setText('CLOSE').show().onClick(function () {
+        Telegram.WebApp.close();
+    });
+</script>
 </body>
 
 </html>
