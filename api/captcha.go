@@ -1,14 +1,17 @@
 package api
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
@@ -25,6 +28,19 @@ type VerifyResp struct {
 	ChallengeTs time.Time `json:"challenge_ts"`
 	Hostname    string    `json:"hostname"`
 	Credit      bool      `json:"credit"`
+}
+
+type queryData struct {
+	Key   string
+	Value string
+}
+
+type userData struct {
+	ID           int64  `json:"id"`
+	FirstName    string `json:"first_name"`
+	LastName     string `json:"last_name"`
+	Username     string `json:"username"`
+	LanguageCode string `json:"language_code"`
 }
 
 func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
@@ -60,11 +76,15 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if hCaptchaToken := r.Form.Get("g-recaptcha-response"); hCaptchaToken != "" {
-		log.Println(r.Form.Get("webapp"))
 		var resultText string
 		t, _ := template.New("index").Parse(string(html.ResultHTML))
+		webappForm := r.Form.Get("webapp")
 		result := VerifyCaptcha(hCaptchaToken)
 		switch {
+		case webappForm == "":
+			resultText = "Invalid parameters, please open this page via telegram"
+		case !VerifyWebappData(webappForm, data):
+			resultText = "Incorrect parameters, this captcha is not for you"
 		case !result.Success:
 			resultText = "Verification failed, please close the page and try again"
 		case !result.ChallengeTs.After(time.Now().Add(-60 * time.Second)):
@@ -117,6 +137,54 @@ func VerifyCaptcha(token string) (r VerifyResp) {
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(resp.Body)
 	_ = json.Unmarshal(body, &r)
+	return
+}
+
+func VerifyWebappData(webappData string, joinData JoinReqData) (isVaild bool) {
+	values, _ := url.ParseQuery(webappData)
+	if len(values["hash"]) == 0 || len(values["user"]) == 0 {
+		return false
+	}
+	dataCheckStr := parseDataCheckStr(values)
+	secretKey := hmacSha256([]byte(os.Getenv("BOT_TOKEN")), []byte("WebAppData"))
+	hash := hex.EncodeToString(hmacSha256([]byte(dataCheckStr), secretKey))
+	if hash != values["hash"][0] {
+		return false
+	}
+	var user userData
+	_ = json.Unmarshal([]byte(values["user"][0]), &user)
+	if user.ID != joinData.UserID {
+		return false
+	}
+	return true
+}
+
+func hmacSha256(data, secret []byte) []byte {
+	h := hmac.New(sha256.New, secret)
+	h.Write(data)
+	return h.Sum(nil)
+}
+
+func parseDataCheckStr(values url.Values) (dataCheckStr string) {
+	var data []queryData
+	for s, strs := range values {
+		if s == "hash" {
+			continue
+		}
+		data = append(data, queryData{
+			Key:   s,
+			Value: strs[0],
+		})
+	}
+	sort.SliceStable(data, func(i, j int) bool {
+		return data[i].Key[0] < data[j].Key[0]
+	})
+	for i, v := range data {
+		dataCheckStr += fmt.Sprintf("%s=%s", v.Key, v.Value)
+		if i != len(data)-1 {
+			dataCheckStr += "\n"
+		}
+	}
 	return
 }
 
