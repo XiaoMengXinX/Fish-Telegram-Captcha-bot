@@ -45,9 +45,7 @@ func BotHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	bot.SetAPIEndpoint(tgbotapi.APIEndpoint)
 
-	if update.ChatMember != nil {
-		log.Println(string(body))
-	}
+	log.Println(string(body))
 
 	if update.ChatJoinRequest != nil {
 		name := update.ChatJoinRequest.From.FirstName + " " + update.ChatJoinRequest.From.LastName
