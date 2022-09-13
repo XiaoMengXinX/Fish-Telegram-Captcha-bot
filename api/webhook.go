@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -45,7 +44,39 @@ func BotHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	bot.SetAPIEndpoint(tgbotapi.APIEndpoint)
 
-	log.Println(string(body))
+	// due to the limitations of vercel, group mode is not supported
+	/*
+		if update.Message != nil {
+			if len(update.Message.NewChatMembers) == 0 {
+				return
+			}
+			if bot.Self.ID == 0 {
+				bot.Self, _ = bot.GetMe()
+			}
+			myRights, _ := bot.GetChatMember(tgbotapi.GetChatMemberConfig{
+				ChatConfigWithUser: tgbotapi.ChatConfigWithUser{
+					ChatID: update.Message.Chat.ID,
+					UserID: bot.Self.ID,
+				},
+			})
+			if !myRights.CanRestrictMembers || myRights.CanInviteUsers {
+				return
+			}
+			if update.Message.From.IsBot {
+				return
+			}
+			if ContainsAny(update.Message.From.FirstName, blacklistKeywords) || ContainsAny(update.Message.From.LastName, blacklistKeywords) || ContainsAny(update.Message.From.UserName, blacklistKeywords) {
+				action := tgbotapi.BanChatMemberConfig{
+					ChatMemberConfig: tgbotapi.ChatMemberConfig{
+						ChatID: update.Message.Chat.ID,
+						UserID: update.Message.From.ID,
+					},
+				}
+				_, _ = bot.Send(action)
+				return
+			}
+		}
+	*/
 
 	if update.ChatJoinRequest != nil {
 		name := update.ChatJoinRequest.From.FirstName + " " + update.ChatJoinRequest.From.LastName
