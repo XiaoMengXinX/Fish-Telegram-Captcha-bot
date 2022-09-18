@@ -120,8 +120,8 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 					},
 					UserID: data.UserID,
 				})
-				resultText = "Verification passed"
 			}
+			resultText = "Verification passed"
 		}
 		_ = t.Execute(w, resultText)
 		return
