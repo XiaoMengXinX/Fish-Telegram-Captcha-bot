@@ -13,14 +13,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-var jwtKey = os.Getenv("SECRET_KEY")
-var blacklistKeywords = strings.Split(strings.ReplaceAll(string(keywords.Blacklist), "\r", ""), "\n")
-
-type JoinReqData struct {
-	UserID int64 `json:"user_id"`
-	ChatID int64 `json:"chat_id"`
-	Time   int64 `json:"time"`
-}
+var BlacklistKeywords = strings.Split(strings.ReplaceAll(string(keywords.Blacklist), "\r", ""), "\n")
 
 func BotHandler(w http.ResponseWriter, r *http.Request) {
 	body, _ := io.ReadAll(r.Body)
@@ -44,43 +37,9 @@ func BotHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	bot.SetAPIEndpoint(tgbotapi.APIEndpoint)
 
-	// due to the limitations of vercel, group mode is not supported
-	/*
-		if update.Message != nil {
-			if len(update.Message.NewChatMembers) == 0 {
-				return
-			}
-			if bot.Self.ID == 0 {
-				bot.Self, _ = bot.GetMe()
-			}
-			myRights, _ := bot.GetChatMember(tgbotapi.GetChatMemberConfig{
-				ChatConfigWithUser: tgbotapi.ChatConfigWithUser{
-					ChatID: update.Message.Chat.ID,
-					UserID: bot.Self.ID,
-				},
-			})
-			if !myRights.CanRestrictMembers || myRights.CanInviteUsers {
-				return
-			}
-			if update.Message.From.IsBot {
-				return
-			}
-			if ContainsAny(update.Message.From.FirstName, blacklistKeywords) || ContainsAny(update.Message.From.LastName, blacklistKeywords) || ContainsAny(update.Message.From.UserName, blacklistKeywords) {
-				action := tgbotapi.BanChatMemberConfig{
-					ChatMemberConfig: tgbotapi.ChatMemberConfig{
-						ChatID: update.Message.Chat.ID,
-						UserID: update.Message.From.ID,
-					},
-				}
-				_, _ = bot.Send(action)
-				return
-			}
-		}
-	*/
-
 	if update.ChatJoinRequest != nil {
 		name := update.ChatJoinRequest.From.FirstName + " " + update.ChatJoinRequest.From.LastName
-		if ContainsAny(name, blacklistKeywords) || ContainsAny(update.ChatJoinRequest.Bio, blacklistKeywords) {
+		if ContainsAny(name, BlacklistKeywords) || ContainsAny(update.ChatJoinRequest.Bio, BlacklistKeywords) {
 			_, _ = bot.Request(tgbotapi.DeclineChatJoinRequest{
 				ChatConfig: tgbotapi.ChatConfig{
 					ChatID: update.ChatJoinRequest.Chat.ID,
@@ -98,7 +57,7 @@ func BotHandler(w http.ResponseWriter, r *http.Request) {
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"data": string(reqDataJson),
 		})
-		tokenString, _ := token.SignedString([]byte(jwtKey))
+		tokenString, _ := token.SignedString([]byte(os.Getenv("BOT_TOKEN")))
 		msg := tgbotapi.NewMessage(update.ChatJoinRequest.From.ID, fmt.Sprintf("你正在申请加入群组「%s」，请点击下方按钮以完成加群验证。\nYou are requesting to join the group 「%s」, please click the button below to complete the anti-spam verification.\n\n请在 180s 内完成加群验证\nPlease complete the verification within 180s.", update.ChatJoinRequest.Chat.Title, update.ChatJoinRequest.Chat.Title))
 		webapp := tgbotapi.WebAppInfo{URL: fmt.Sprintf("https://%s/captcha?token=%s", r.Host, tokenString)}
 		button := tgbotapi.InlineKeyboardButton{

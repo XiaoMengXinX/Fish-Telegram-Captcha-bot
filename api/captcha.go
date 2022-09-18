@@ -23,6 +23,13 @@ import (
 var siteKey = os.Getenv("SITE_KEY")
 var secretKey = os.Getenv("SECRET_KEY")
 
+type JoinReqData struct {
+	UserID int64 `json:"user_id"`
+	ChatID int64 `json:"chat_id"`
+	Time   int64 `json:"time"`
+	Type   int   `json:"type"`
+}
+
 type VerifyResp struct {
 	Success     bool      `json:"success"`
 	ChallengeTs time.Time `json:"challenge_ts"`
@@ -59,9 +66,9 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 		_ = t.Execute(w, "Wrong parameters")
 		return
 	} else {
-		var isVaild bool
-		isVaild, data = VerifyJWT(token)
-		if !isVaild {
+		var isValid bool
+		isValid, data = VerifyJWT(token)
+		if !isValid {
 			t, _ := template.New("index").Parse(string(html.ResultHTML))
 			_ = t.Execute(w, "Incorrect parameters")
 			return
@@ -92,13 +99,29 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 		case result.Hostname != parseHostName(r.Host):
 			resultText = "Verification failed, incorrect host name"
 		default:
-			_, _ = bot.Request(tgbotapi.ApproveChatJoinRequestConfig{
-				ChatConfig: tgbotapi.ChatConfig{
-					ChatID: data.ChatID,
-				},
-				UserID: data.UserID,
-			})
-			resultText = "Verification passed"
+			if data.Type == 1 {
+				chat, _ := bot.GetChat(tgbotapi.ChatInfoConfig{
+					ChatConfig: tgbotapi.ChatConfig{
+						ChatID: data.ChatID,
+					},
+				})
+				action := tgbotapi.RestrictChatMemberConfig{
+					ChatMemberConfig: tgbotapi.ChatMemberConfig{
+						ChatID: data.ChatID,
+						UserID: data.UserID,
+					},
+					Permissions: chat.Permissions,
+				}
+				_, _ = bot.Send(action)
+			} else {
+				_, _ = bot.Request(tgbotapi.ApproveChatJoinRequestConfig{
+					ChatConfig: tgbotapi.ChatConfig{
+						ChatID: data.ChatID,
+					},
+					UserID: data.UserID,
+				})
+				resultText = "Verification passed"
+			}
 		}
 		_ = t.Execute(w, resultText)
 		return
@@ -108,12 +131,12 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 	_ = t.Execute(w, siteKey)
 }
 
-func VerifyJWT(tokenString string) (isVaild bool, data JoinReqData) {
+func VerifyJWT(tokenString string) (isValid bool, data JoinReqData) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v ", token.Header["alg"])
 		}
-		return []byte(secretKey), nil
+		return []byte(os.Getenv("BOT_TOKEN")), nil
 	})
 	if err != nil {
 		return false, data
@@ -140,7 +163,7 @@ func VerifyCaptcha(token string) (r VerifyResp) {
 	return
 }
 
-func VerifyWebappData(webappData string, joinData JoinReqData) (isVaild bool) {
+func VerifyWebappData(webappData string, joinData JoinReqData) (isValid bool) {
 	values, _ := url.ParseQuery(webappData)
 	if len(values["hash"]) == 0 || len(values["user"]) == 0 {
 		return false
