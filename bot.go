@@ -45,6 +45,16 @@ func main() {
 					continue
 				}
 				groupID, _ := strconv.Atoi(update.Message.CommandArguments())
+				member, _ := bot.GetChatMember(tgbotapi.GetChatMemberConfig{
+					ChatConfigWithUser: tgbotapi.ChatConfigWithUser{
+						ChatID: int64(groupID),
+						UserID: update.Message.From.ID,
+					},
+				})
+				if member.Status != "restricted" || member.CanSendMessages {
+					_, _ = bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "你在目标群组中无需验证。\nThere is no need for you to verify in the target group."))
+					continue
+				}
 				reqData.ChatID = int64(groupID)
 				reqData.UserID = update.Message.From.ID
 				reqData.Time = time.Now().Unix()
@@ -193,7 +203,7 @@ func CheckUserChatJoinStatus(bot *tgbotapi.BotAPI, ch chan *tgbotapi.ChatMemberU
 			_, _ = bot.Send(action)
 			break
 		}
-		if time.Now().Unix()-timeStart > 120 {
+		if time.Now().Unix()-timeStart > 125 {
 			ban := tgbotapi.BanChatMemberConfig{
 				ChatMemberConfig: tgbotapi.ChatMemberConfig{
 					ChatID: chatID,
@@ -206,7 +216,7 @@ func CheckUserChatJoinStatus(bot *tgbotapi.BotAPI, ch chan *tgbotapi.ChatMemberU
 			_, _ = bot.Send(action)
 			break
 		}
-		time.Sleep(10 * time.Second)
+		time.Sleep(20 * time.Second)
 	}
 }
 
