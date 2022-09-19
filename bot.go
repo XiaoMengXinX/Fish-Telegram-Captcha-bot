@@ -37,7 +37,6 @@ func main() {
 		var reqData api.JoinReqData
 		var chatID int64
 		var chatTitle string
-		chatMemberCh := make(chan *tgbotapi.ChatMemberUpdated)
 
 		if update.Message != nil {
 			if update.Message.IsCommand() && update.Message.Command() == "start" && update.Message.Chat.IsPrivate() {
@@ -160,11 +159,12 @@ func main() {
 				URL:  &url,
 			}
 			msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(button))
+			msg.ReplyToMessageID = update.Message.MessageID
 			newMsg, err := bot.Send(msg)
 			if err != nil {
 				log.Printf("Send message to %d error: %v", chatID, err)
 			}
-			go CheckUserChatJoinStatus(bot, chatMemberCh, newMsg.MessageID, reqData)
+			go CheckUserChatJoinStatus(bot, newMsg.MessageID, reqData)
 		} else {
 			if chatID == 0 {
 				continue
@@ -184,7 +184,7 @@ func main() {
 	}
 }
 
-func CheckUserChatJoinStatus(bot *tgbotapi.BotAPI, ch chan *tgbotapi.ChatMemberUpdated, msgID int, req api.JoinReqData) {
+func CheckUserChatJoinStatus(bot *tgbotapi.BotAPI, msgID int, req api.JoinReqData) {
 	userID := req.UserID
 	chatID := req.ChatID
 	timeStart := time.Now().Unix()
