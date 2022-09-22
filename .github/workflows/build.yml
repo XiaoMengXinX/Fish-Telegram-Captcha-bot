@@ -23,7 +23,7 @@ jobs:
       run: go mod tidy
 
     - name: Build
-      run: go build -ldflags="-s -w" -o ./Fish-Telegram-Captcha-Bot ./
+      run: CGO_ENABLED=0 go build -ldflags="-s -w" -o ./Fish-Telegram-Captcha-Bot ./
 
     - name: Upload
       uses: actions/upload-artifact@v3.1.0
