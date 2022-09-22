@@ -1,4 +1,4 @@
-name: Go
+name: Build
 
 on:
   push:
@@ -19,11 +19,11 @@ jobs:
       with:
         go-version: 1.18
         
-    - name: Prepare
+    - name: Prepare modules
       run: go mod tidy
 
     - name: Build
-      run: go build -ldflags="-s -w" -o ./Fish-Telegram-Captcha-Bot ./...
+      run: go build -ldflags="-s -w" -o ./Fish-Telegram-Captcha-Bot ./
 
     - name: Upload
       uses: actions/upload-artifact@v3.1.0
