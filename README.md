@@ -43,7 +43,7 @@ In the groups linked with a channel, you can use this mode to verify new members
 
 **Notice: The permission of "Invite Users via Link" CAN NOT be enabled on verification-after-join mode.**
 
-**The bot will automatically handle the verification process. New numbers will be restricted after joining the group until they pass the CAPTCHA.**
+**The bot will automatically handle the verification process. New members will be restricted after joining the group until they pass the CAPTCHA.**
 
 ## How to deploy?
 
