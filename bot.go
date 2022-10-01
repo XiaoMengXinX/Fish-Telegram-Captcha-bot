@@ -164,7 +164,7 @@ func main() {
 			if err != nil {
 				log.Printf("Send message to %d error: %v", chatID, err)
 			}
-			go CheckUserChatJoinStatus(bot, newMsg.MessageID, reqData)
+			go CheckUserChatJoinStatus(bot, []int{newMsg.MessageID, update.Message.MessageID}, reqData)
 		} else {
 			if chatID == 0 {
 				continue
@@ -184,7 +184,7 @@ func main() {
 	}
 }
 
-func CheckUserChatJoinStatus(bot *tgbotapi.BotAPI, msgID int, req api.JoinReqData) {
+func CheckUserChatJoinStatus(bot *tgbotapi.BotAPI, msgID []int, req api.JoinReqData) {
 	userID := req.UserID
 	chatID := req.ChatID
 	timeStart := time.Now().Unix()
@@ -199,8 +199,10 @@ func CheckUserChatJoinStatus(bot *tgbotapi.BotAPI, msgID int, req api.JoinReqDat
 			log.Printf("Get user %d permission on chat %d error: %v", userID, chatID, err)
 		}
 		if userPermission.CanSendMessages {
-			action := tgbotapi.NewDeleteMessage(chatID, msgID)
-			_, _ = bot.Send(action)
+			for _, id := range msgID {
+				action := tgbotapi.NewDeleteMessage(chatID, id)
+				_, _ = bot.Send(action)
+			}
 			break
 		}
 		if time.Now().Unix()-timeStart > 125 {
@@ -212,8 +214,10 @@ func CheckUserChatJoinStatus(bot *tgbotapi.BotAPI, msgID int, req api.JoinReqDat
 				UntilDate: time.Now().Unix() + 40,
 			}
 			_, _ = bot.Send(ban)
-			action := tgbotapi.NewDeleteMessage(chatID, msgID)
-			_, _ = bot.Send(action)
+			for _, id := range msgID {
+				action := tgbotapi.NewDeleteMessage(chatID, id)
+				_, _ = bot.Send(action)
+			}
 			break
 		}
 		time.Sleep(20 * time.Second)
