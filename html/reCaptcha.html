@@ -7,10 +7,19 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.recaptcha.net/recaptcha/api.js" async defer></script>
     <style>
-        .g-recaptcha {
+        #rc-imageselect, .g-recaptcha {
+            display: inline;
+        }
+
+        #rc-imageselect{
+            max-width: 100%;
+        }
+
+        .g-recaptcha>div{
+            width: 100% !important;
             margin-top: 50px;
-            display: flex;
-            justify-content: center;
+            text-align: center;
+            position: relative;
         }
 
         .input-button {
@@ -49,8 +58,18 @@
 
 <div class="form">
     <form id="recaptcha-challenge" method="POST">
+        <script>
+            var onSuccess = function (response) {
+                var logEl = document.querySelector(".message");
+                logEl.innerHTML = "Challenge Success!"
+            };
+            var onExpire = function (response) {
+                var logEl = document.querySelector(".message");
+                logEl.innerHTML = "Token expired, please refresh the page."
+            };
+        </script>
         <input type="hidden" id="webappData" name="webapp" value="">
-        <div class="g-recaptcha" data-sitekey="{{.}}" data-size="compact"></div>
+        <div class="g-recaptcha" data-sitekey="{{.}}" data-callback="onSuccess" data-expired-callback="onExpire"></div>
         <div class="message" aria-live="polite"></div>
         <div class="input-button">
             <input type="submit" value="Submit your verification">
