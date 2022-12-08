@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Are you human?</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://www.recaptcha.net/recaptcha/api.js" async defer></script>
+    <style>
+        .g-recaptcha {
+            margin-top: 50px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .input-button {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        input[type=submit]:hover {
+            background-color: #009900;
+            color: white;
+        }
+
+        input[type=submit] {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            font-size: 16px;
+            border-radius: 8px;
+            -webkit-transition-duration: 0.4s; /* Safari */
+            transition-duration: 0.4s;
+        }
+
+        .message {
+            margin: 20px;
+            font-size: 16px;
+            text-align: center;
+        }
+    </style>
+</head>
+<meta name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+
+<body>
+
+<div class="form">
+    <form id="recaptcha-challenge" method="POST">
+        <input type="hidden" id="webappData" name="webapp" value="">
+        <div class="g-recaptcha" data-sitekey="{{.}}"></div>
+        <div class="message" aria-live="polite"></div>
+        <div class="input-button">
+            <input type="submit" value="Submit your verification">
+        </div>
+    </form>
+</div>
+
+<script>
+    Telegram.WebApp.ready();
+    let initData = Telegram.WebApp.initData || '';
+    document.getElementById("webappData").value = initData;
+</script>
+
+</body>
+</html>

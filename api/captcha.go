@@ -22,6 +22,7 @@ import (
 
 var siteKey = os.Getenv("SITE_KEY")
 var secretKey = os.Getenv("SECRET_KEY")
+var captchaType = os.Getenv("CAPTCHA_TYPE")
 
 type JoinReqData struct {
 	UserID int64 `json:"user_id"`
@@ -82,11 +83,19 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if hCaptchaToken := r.Form.Get("g-recaptcha-response"); hCaptchaToken != "" {
+	if captchaToken := r.Form.Get("g-recaptcha-response"); captchaToken != "" {
 		var resultText string
 		t, _ := template.New("index").Parse(string(html.ResultHTML))
 		webappForm := r.Form.Get("webapp")
-		result := VerifyCaptcha(hCaptchaToken)
+		var result VerifyResp
+		switch captchaType {
+		case "hCaptcha":
+			result = VerifyhCaptcha(captchaToken)
+		case "reCaptcha":
+			result = VerifyReCaptcha(captchaToken)
+		default:
+			result = VerifyhCaptcha(captchaToken)
+		}
 		switch {
 		case webappForm == "":
 			resultText = "Invalid parameters, please open this page via telegram"
@@ -126,8 +135,16 @@ func ChallengeHandler(w http.ResponseWriter, r *http.Request) {
 		_ = t.Execute(w, resultText)
 		return
 	}
-
-	t, _ := template.New("index").Parse(string(html.CaptchaHTML))
+	var tmpl string
+	switch captchaType {
+	case "hCaptcha":
+		tmpl = string(html.HCaptchaHTML)
+	case "reCaptcha":
+		tmpl = string(html.ReCaptchaHTML)
+	default:
+		tmpl = string(html.HCaptchaHTML)
+	}
+	t, _ := template.New("index").Parse(tmpl)
 	_ = t.Execute(w, siteKey)
 }
 
@@ -153,8 +170,18 @@ func VerifyJWT(tokenString string) (isValid bool, data JoinReqData) {
 	return true, data
 }
 
-func VerifyCaptcha(token string) (r VerifyResp) {
+func VerifyhCaptcha(token string) (r VerifyResp) {
 	resp, _ := http.PostForm("https://hcaptcha.com/siteverify",
+		url.Values{"secret": {secretKey}, "response": {token}},
+	)
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(resp.Body)
+	_ = json.Unmarshal(body, &r)
+	return
+}
+
+func VerifyReCaptcha(token string) (r VerifyResp) {
+	resp, _ := http.PostForm("https://www.google.com/recaptcha/api/siteverify",
 		url.Values{"secret": {secretKey}, "response": {token}},
 	)
 	defer resp.Body.Close()
