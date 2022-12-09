@@ -31,7 +31,7 @@
             text-align: center;
             font-size: 16px;
             border-radius: 8px;
-            -webkit-transition-duration: 0.4s; /* Safari */
+            -webkit-transition-duration: 0.4s;
             transition-duration: 0.4s;
         }
 
@@ -46,29 +46,27 @@
       content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
 
 <body>
-
 <div class="form">
-    <form id="hcaptcha-challenge" method="POST">
-        <script>
-            var onSuccess = function (response) {
-                var logEl = document.querySelector(".message");
-                logEl.innerHTML = "Challenge Success!"
-            };
-            var onExpire = function (response) {
-                var logEl = document.querySelector(".message");
-                logEl.innerHTML = "Token expired, please refresh the page."
-            };
-        </script>
+    <form id="captcha-challenge" method="POST">
         <input type="hidden" id="webappData" name="webapp" value="">
-        <div id="hcaptcha" class="h-captcha" data-sitekey="{{.}}"
-             data-callback="onSuccess" data-expired-callback="onExpire"></div>
+        <div class="h-captcha" data-sitekey="{{.}}" data-callback="onSuccess" data-expired-callback="onExpire">
+        </div>
         <div class="message" aria-live="polite"></div>
         <div class="input-button">
             <input type="submit" value="Submit your verification">
         </div>
     </form>
 </div>
-
+<script>
+    var onSuccess = function (response) {
+        var logEl = document.querySelector(".message");
+        logEl.innerHTML = "Challenge Success!"
+    };
+    var onExpire = function (response) {
+        var logEl = document.querySelector(".message");
+        logEl.innerHTML = "Token expired, please refresh the page."
+    };
+</script>
 <script>
     Telegram.WebApp.ready();
     let initData = Telegram.WebApp.initData || '';
@@ -76,4 +74,5 @@
 </script>
 
 </body>
+
 </html>
